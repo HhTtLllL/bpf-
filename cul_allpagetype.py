@@ -22,32 +22,22 @@ int allpage(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat, struct zo
     
     unsigned long start = start_pfn;
     int time = (end_pfn - start_pfn) / pageblock_nr_pages;
-    /*while(time --) {
-
+    
+    for (pfn = start_pfn; pfn < end_pfn; pfn += 1) {
+        
+        if (pfn % 512 != 0) continue;
         struct page *page;
-        //page = (void*)(start * PAGE_SIZE);
-        //page = pfn_to_online_page(pfn);
-        unsigned long nr = pfn >> PFN_SECTION_SHIFT;
-        if (nr >= NR_MEM_SECTIONS) page = NULL;
-        else {
-                
-                
-
-
-        }
+        page = (void*)(start * PAGE_SIZE);
+       // page = pfn_to_online_page(pfn);
 
         if (!page) continue;
         if (page_zone(page) != zone) continue;
 
         mtype = get_pageblock_migratetype(page);
         if (mtype < MIGRATE_TYPES) count[mtype]++;
-        pfn += pageblock_nr_pages;
-    }*/
-    
-    for (pfn = start_pfn; pfn < end_pfn; pfn ++) {
-        
-        if (pfn % 512 != 0) continue;
     }
+
+
     
     return 0;
 }
