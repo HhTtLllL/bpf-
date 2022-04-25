@@ -36,7 +36,7 @@ int cul_mem(struct pt_regs *ctx, unsigned int order, struct contig_page_info *in
     unsigned long requested = 1UL << order;
     
     time = bpf_ktime_get_ns();
-    table_mem.update(&time, &res);
+    table_mem.update(&time, &return_value);
 
     return 0;
 }

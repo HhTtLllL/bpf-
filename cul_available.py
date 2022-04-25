@@ -8,9 +8,7 @@ bpf_text = """
 
 #include <uapi/linux/ptrace.h>
 
-#define PAGE_SHIFT 12
 #define K(x) (x) << (PAGE_SHIFT - 10)
-
 BPF_HASH(table_available, u32, u32);
 
 int cul_available(struct pt_regs *ctx) {
@@ -19,16 +17,10 @@ int cul_available(struct pt_regs *ctx) {
 
     return_value = PT_REGS_RC(ctx);
     return_value = K(return_value);
-
-
-    u32 temp = 1;
-    table_available.update(&temp, &return_value);
-
+    table_available.update(&return_value, &return_value);
     
     return 0;
 }
-
-
 
 
 """

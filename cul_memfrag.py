@@ -22,12 +22,15 @@ BPF_HASH(dma32, int, int);
 BPF_HASH(normal, int, int);
 
 
+/*
 struct contig_page_info {
 
         unsigned long free_pages;
         unsigned long free_blocks_total;
         unsigned long free_blocks_suitable;
 };
+
+*/
 
 int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct zone *zone) {
 
@@ -59,6 +62,7 @@ int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct z
 
 
         //__fragmentation_index
+        //数值从0-1,保留两位小数，总共是3位有效数字。转换成0-1000；
         unsigned long requested = 1UL << order;
         key = order;
 
@@ -120,8 +124,9 @@ int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct z
                 dma.update(&key, &result);
                 continue;
             }
-
+                            //1000 - ( 1000 + (1000 * zone_free_page (申请连续page block的page数)) / freeblock 个数)
             int res =  1000 - div_u64( (1000+(div_u64(free_pages * 1000ULL, requested))), free_blocks_total);
+                            //统计0-order中空闲页的总数量和各个链表上空闲块的总数，当空闲页数一定时，如果低阶的空闲页数量越多，则block值越高，则最后的最后的碎片化也越严重。如果高阶的空闲页数量多，则block相对较小。则碎片化比较轻微。
             dma.update(&key, &res);
         }
     }
@@ -140,7 +145,7 @@ normal = b.get_table("normal")
 #b.trace_print()
 t = 0
 while(1):
-    sleep(1)
+    sleep(3)
 
     print("---------------------------------------------------------")
     print("dma ", end = '\t')

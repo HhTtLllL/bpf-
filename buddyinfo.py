@@ -16,11 +16,12 @@ bpf_text = """
 BPF_HASH(dma, int, unsigned long);
 BPF_HASH(dma32, int, unsigned long);
 BPF_HASH(normal, int, unsigned long);
-BPF_HASH(zone, int, char);
+BPF_HASH(zone, int, char*);
 
 int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat, struct zone *zone) {
     
     bpf_trace_printk("node %d, zone %s", pgdat->node_id, zone->name);
+    bpf_trace_printk("node %d",  pageblock_order);
 
     const char* p = zone->name;
 
@@ -71,9 +72,9 @@ normal = b.get_table("normal")
 
 
 
-#b.trace_print()
+b.trace_print()
 while(1):
-    sleep(1)
+    sleep(3)
 
     print("---------------------------------------------------------")
     print("dma ", end = '\t')

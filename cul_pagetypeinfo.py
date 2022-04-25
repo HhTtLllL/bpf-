@@ -14,39 +14,32 @@ bpf_text = """
 BPF_HASH(pagetype, int, unsigned long);
 
 int pagetypeinfo(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat, struct zone *zone) {
-
+    
     int order, mtype, key;
     unsigned long value;
-    for (mtype = 0; mtype < MIGRATE_TYPES; mtype++ ) {
 
-        for (order = 0; order < MAX_ORDER; ++ order) {
-            
+    for (mtype = 0; mtype < MIGRATE_TYPES; mtype++ ) {
+        
+        for (order = 0; order < MAX_ORDER; ++order) {
+
             unsigned long freecount = 0;
             struct free_area *area;
             struct list_head *curr;
             bool overflow = false;
-    
-            //area = &(zone->free_area[order]);
-            area = &(zone->free_area[0]) + order;
-
-            list_for_each(curr, &area->free_list[mtype]) {
-                
-                if (++ freecount >= 100000) {
-
-                    
-                    overflow = true;
-                    break;
-                }
-            }
             
-            key = order;
-            value = freecount;
-            bpf_trace_printk("freecount = %lu", value);
+            area = &(zone->free_area[0]) + order;
+            
+            
+            list_for_each(curr, (&(area->free_list[0]))) {
+                
+           //     ++ freecount;
+            }
+
+            //key = order;
+            //value = freecount;
             //pagetype.update(&key, &value);
         }
     }
-
-
 
     return 0;
 }
