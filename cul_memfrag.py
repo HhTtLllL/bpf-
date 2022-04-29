@@ -5,7 +5,9 @@ from bcc import BPF
 # -1 表示分配可以成功
 # 0 表示分配失败和内存不足的关联更大
 # 越接近表示分配和碎片化有关，表示当前内存碎片更多
-#
+
+#mm/vmstat
+#/sys/kernel/debug/exfrag/extfrag_index
 #
 
 bpf_text = """
@@ -135,7 +137,6 @@ int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct z
 }
 
 """
-
 b = BPF(text = bpf_text)
 b.attach_kprobe(event = "extfrag_show_print", fn_name = "cul_mem")
 dma = b.get_table("dma")

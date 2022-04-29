@@ -18,8 +18,6 @@ BPF_HASH(table_total, u32, u32);
 
 int tail_call(void *ctx) {
     
-    bpf_trace_printk("Tail-call++++++++++++++++++++++++++++++");
-
     return 0;
 }
 

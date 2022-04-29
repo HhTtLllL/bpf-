@@ -2,7 +2,7 @@ from __future__ import print_function
 from time import sleep, strftime
 from bcc import BPF
 
-
+#get_slabinfo
 bpf_text = """
     
 #include <uapi/linux/ptrace.h>
@@ -31,12 +31,26 @@ struct slabinfo {
 };
 
 struct kmem_cache_node {
-	spinlock_t list_lock;
 
+	spinlock_t list_lock;
 	atomic_long_t nr_slabs;
 	atomic_long_t total_objects;
 	struct list_head full;
 };
+
+
+struct Myslab {
+    
+    char name[20];
+    unsigned int size;
+    unsigned int ob_slab;
+    int cache_order;
+};
+
+
+BPF_HASH(myslab_table, unsigned long, struct Myslab);
+
+
 
 #define for_each_kmem_cache_node(__s, __node, __n) \
 	for (__node = 0; __node < 1; __node++) \
@@ -50,27 +64,24 @@ int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s, struct slabinfo *sinf
     unsigned long nr_objs = 0;
     unsigned long nr_free = 0;
     int node;
+    char name[20];
 /*
     struct kmem_cache_node *n;
-
     for (node = 0; node < 1; node ++) {
-        
         n = s->node[node];
         unsigned long tmp =  &n->nr_slabs;
     }
 */
- 
+
 /*     for_each_kmem_cache_node(s, node, n) {
-        
-        //nr_slabs += node_nr_slabs(n);
+        nr_slabs += node_nr_slabs(n);
         nr_slabs += atomic_long_read(&n->nr_slabs);
-
-
     }
 */
+    
+    struct Myslab myslab;
 
     unsigned int x = (s->oo).x;
-
     int k = 1;
 
     //name.update(&k, s->name);
@@ -82,7 +93,24 @@ int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s, struct slabinfo *sinf
 
     int order = (1 << (x >> OO_SHIFT));
     cache_order.update(&k, &order);
+        
+    for (int i = 0; i < 20; i ++) {
 
+        myslab.name[i] = *(s->name + i);   
+    }
+    
+    myslab.size = s->size;
+
+    myslab.ob_slab =  x & OO_MASK;
+    myslab.cache_order = (1 << (x >> OO_SHIFT));
+    
+    unsigned long time = bpf_ktime_get_ns();
+
+    myslab_table.update(&time, &myslab);
+    
+
+
+    bpf_trace_printk("name.size = %d ", sizeof(*(s->name)));
     bpf_trace_printk("name = %s ", s->name);
     bpf_trace_printk("size = %u ", s->size);
 
@@ -99,4 +127,12 @@ int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s, struct slabinfo *sinf
 b = BPF(text = bpf_text)
 
 b.attach_kprobe(event="get_slabinfo", fn_name="cul_meminfo")
-b.trace_print()
+myslab = b.get_table("myslab_table")
+
+#b.trace_print()
+while(1):
+    for k, v in myslab.items():
+        # size 对象的大小, 每一个对象占用了多少slab, slab占用的页数 
+        print("%-17s\t %u\t %u\t %d"%(v.name, v.size, v.ob_slab, v.cache_order))
+
+    sleep(3)

@@ -72,7 +72,8 @@ normal = b.get_table("normal")
 
 
 
-b.trace_print()
+#b.trace_print()
+#num*2^x*PAGE_SIZE   /mm/vmstat.c 
 while(1):
     sleep(3)
 

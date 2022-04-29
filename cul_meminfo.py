@@ -1,9 +1,5 @@
 #统计系统的 totalram, freeram, shareram
 #
-#
-#
-
-
 
 from __future__ import print_function
 from time import sleep, strftime
@@ -58,13 +54,13 @@ int cul_meminfo(struct pt_regs *ctx, struct sysinfo *val) {
 
 """
 
+#mm/page_alloc.c
 b = BPF(text = bpf_text)
 table_meminfo = b.get_table("table_meminfo")
 
 b.attach_kprobe(event="si_swapinfo", fn_name="cul_meminfo")
 
 while(1):
-    sleep(1)
     for k, v in table_meminfo.items():
         if(k.value == 1):
             print("totalram :%lu"%(v.value))
@@ -73,3 +69,5 @@ while(1):
         if(k.value == 3):
             print("sharedram: %lu"%(v.value))
 
+
+    sleep(3)
