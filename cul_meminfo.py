@@ -1,10 +1,10 @@
 #统计系统的 totalram, freeram, shareram
 #
-
 from __future__ import print_function
 from time import sleep, strftime
 from bcc import BPF
 
+import pymysql
 
 bpf_text = """
     
@@ -60,14 +60,33 @@ table_meminfo = b.get_table("table_meminfo")
 
 b.attach_kprobe(event="si_swapinfo", fn_name="cul_meminfo")
 
+
+
+totalram = 0
+freeram = 0
+shareram = 0
 while(1):
+
+    conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     for k, v in table_meminfo.items():
         if(k.value == 1):
+            totalram = v.value
             print("totalram :%lu"%(v.value))
         if(k.value == 2):
+            freeram = v.value
             print("freeram: %lu"%(v.value))
         if(k.value == 3):
+            shareram = v.value
             print("sharedram: %lu"%(v.value))
+    
+       
+    sql = 'insert into meminfo (totalram, freeram, shareram, time) values(%(totalram)s, %(freeram)s, %(shareram)s, now())'
 
+    cursor.execute(sql, {'totalram' : totalram, 'freeram' : freeram, 'shareram' : shareram})
+
+    cursor.close()
+    conn.commit()
+    conn.close()
 
     sleep(3)

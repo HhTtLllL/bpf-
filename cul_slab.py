@@ -2,6 +2,8 @@ from __future__ import print_function
 from time import sleep, strftime
 from bcc import BPF
 
+import pymysql
+
 #get_slabinfo
 bpf_text = """
     
@@ -49,8 +51,6 @@ struct Myslab {
 
 
 BPF_HASH(myslab_table, unsigned long, struct Myslab);
-
-
 
 #define for_each_kmem_cache_node(__s, __node, __n) \
 	for (__node = 0; __node < 1; __node++) \
@@ -129,10 +129,34 @@ b = BPF(text = bpf_text)
 b.attach_kprobe(event="get_slabinfo", fn_name="cul_meminfo")
 myslab = b.get_table("myslab_table")
 
+name = ''
+size = 0
+ob_slab = 0
+cache_order = 0
+
 #b.trace_print()
 while(1):
+    
+    conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
+
     for k, v in myslab.items():
         # size 对象的大小, 每一个对象占用了多少slab, slab占用的页数 
         print("%-17s\t %u\t %u\t %d"%(v.name, v.size, v.ob_slab, v.cache_order))
+        
+        name = v.name
+        size = v.size
+        ob_slab = v.ob_slab
+        cache_order = v.cache_order
 
+        sql = 'insert into slab (name, size, ob_slab, cache_order, time) values(%(name)s, %(size)s, %(ob_slab)s, %(cache_order)s, now())'
+
+        cursor.execute(sql, {'name' : name, 'size' : size, 'ob_slab' : ob_slab, 'cache_order' : cache_order})
+
+
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+    
     sleep(3)

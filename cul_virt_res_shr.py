@@ -6,6 +6,9 @@
 from __future__ import print_function 
 from bcc import BPF
 from time import sleep, strftime
+
+import pymysql
+
 bpf_text = """
 
 #include <uapi/linux/ptrace.h>
@@ -63,12 +66,17 @@ table_shared = b.get_table("table_shared")
 table_resident = b.get_table("table_resident")
 table_total = b.get_table("table_total")
 
-#b.trace_print()
-
 #(task, pid, cpu, flags) = b.trace_fields()
 
 print("PID            VIRT          RES          SHR          ")
+pid = 0
+virt = 0
+res = 0
+shr = 0
 while(1):
+
+        conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
         sleep(1)
 #        for k, v in table.items():
 #            print("%-10d%-10d"%(k.value, v.value*4))
@@ -78,7 +86,18 @@ while(1):
           #  print("ID: " + str(k) + "    " + "VIRT: " + str(table_total[k] * 4) + "   " +  "RES: " + str(table_resident[k] * 4) + "     " + "SHR: " + str(table_shared[k] * 4) )
 
           print("%-10d   %-10d   %-10d   %-10d"%(k.value, table_total[k].value * 4, table_resident[k].value * 4, table_shared[k].value * 4))
+          pid = k.value
+          virt = table_total[k].value * 4
+          res = table_resident[k].value * 4
+          shr = table_shared[k].value * 4
+
+          sql = 'insert into virt(pid, virt, res, shr, time) values(%(pid)s, %(virt)s, %(res)s, %(shr)s, now())'
+          cursor.execute(sql, {'pid' : pid, 'virt' : virt, 'res' : res, 'shr' : shr})
+          
         
+        cursor.close()
+        conn.commit()
+        conn.close()
 
 
 

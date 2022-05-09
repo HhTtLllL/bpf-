@@ -1,6 +1,7 @@
 from __future__ import print_function
 from time import sleep, strftime
 from bcc import BPF
+import pymysql
 
 #查看多种虚拟内存的统计信息
 bpf_text = """
@@ -231,10 +232,80 @@ b = BPF(text = bpf_text)
 b.attach_kprobe(event = "vmstat_show", fn_name = "allpage")
 table_vmstat = b.get_table("vmstat")
 
+d = {
+        'nr_free_pages': 0,  
+        'nr_zone_inactive_anon': 0,          
+        'nr_zone_active_anon': 0,          
+        'nr_zone_inactive_file': 0,            
+        'nr_zone_active_file': 0,           
+        'nr_zone_unevictable': 0,           
+        'nr_zone_write_pending': 0,             
+        'nr_mlock': 0,             
+        'nr_bounce': 0,            
+        'nr_zspages': 0,           
+        'nr_free_cma': 0,          
+        'numa_hit': 0, 
+        'numa_miss': 0,        
+        'numa_foreign': 0,      
+        'numa_interleave': 0,
+        'numa_local': 0, 
+        'numa_other': 0,  
+        'pgpgin': 0,  
+        'pgpgout': 0,   
+        'pswpin': 0,
+        'pswpout': 0,
+        'pgfree': 0,
+        'pgactivate': 0,
+        'pgdeactivate': 0,
+        'pglazyfree': 0,
+        'pgfault': 0,
+        'pgmajfault': 0,   
+        'pglazyfreed': 0,    
+        'htlb_buddy_alloc_success': 0,    
+        'htlb_buddy_alloc_fail': 0
+}
+
+
+
 print("vmstat_text\t\t\t\tnumber")
+
 while(1):
+
+    conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
+    cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
+
     for i in range (0, 150):
         for k, v in table_vmstat.items():
             if (i == k.value):
+                d[name[k.value]] = v.value
                 print("%-25s%20lu"%(name[k.value], v.value))
+    
+
+    sql = 'insert into vmstat (nr_free_pages, nr_zone_inactive_anon, nr_zone_active_anon, nr_zone_inactive_file, nr_zone_active_file, nr_zone_unevictable, nr_zone_write_pending, nr_mlock, nr_bounce, nr_zspages, nr_free_cma, numa_hit, numa_miss, numa_foreign, numa_interleave, numa_local, numa_other, pgpgin, pgpgout, pswpin, pswpout, pgfree, pgactivate, pgdeactivate, pglazyfree, pgfault, pgmajfault, pglazyfreed, htlb_buddy_alloc_success, htlb_buddy_alloc_fail, time) values(%(nr_free_pages)s, %(nr_zone_inactive_anon)s, %(nr_zone_active_anon)s, %(nr_zone_inactive_file)s, %(nr_zone_active_file)s, %(nr_zone_unevictable)s, %(nr_zone_write_pending)s, %(nr_mlock)s, %(nr_bounce)s, %(nr_zspages)s, %(nr_free_cma)s, %(numa_hit)s, %(numa_miss)s, %(numa_foreign)s, %(numa_interleave)s, %(numa_local)s, %(numa_other)s, %(pgpgin)s, %(pgpgout)s, %(pswpin)s, %(pswpout)s, %(pgfree)s, %(pgactivate)s, %(pgdeactivate)s, %(pglazyfree)s, %(pgfault)s, %(pgmajfault)s, %(pglazyfreed)s, %(htlb_buddy_alloc_success)s, %(htlb_buddy_alloc_fail)s, now())'
+
+    cursor.execute(sql, {'nr_free_pages' : d['nr_free_pages'], 'nr_zone_inactive_anon' : d['nr_zone_inactive_anon'], 'nr_zone_active_anon' : d['nr_zone_active_anon'], 'nr_zone_inactive_file':d['nr_zone_inactive_file'], 'nr_zone_active_file':d['nr_zone_active_file'], 'nr_zone_unevictable':d['nr_zone_unevictable'], 'nr_zone_write_pending':d['nr_zone_write_pending'], 'nr_mlock':d['nr_mlock'], 'nr_bounce':d['nr_bounce'], 'nr_zspages':d['nr_zspages'], 'nr_free_cma':d['nr_free_cma'], 'numa_hit':d['numa_hit'], 'numa_miss':d['numa_miss'], 'numa_foreign':d['numa_foreign'], 'numa_interleave':d['numa_interleave'], 'numa_local':d['numa_local'], 'numa_other':d['numa_other'], 'pgpgin':d['pgpgin'], 'pgpgout':d['pgpgout'], 'pswpin':d['pswpin'], 'pswpout':d['pswpout'], 'pgfree':d['pgfree'], 'pgactivate':d['pgactivate'], 'pgdeactivate':d['pgdeactivate'], 'pglazyfree':d['pglazyfree'], 'pgfault':d['pgfault'], 'pgmajfault':d['pgmajfault'], 'pglazyfreed':d['pglazyfreed'], 'htlb_buddy_alloc_success':d['htlb_buddy_alloc_success'], 'htlb_buddy_alloc_fail':d['htlb_buddy_alloc_fail']})
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+
+ #   for k, v in d.items():
+ #       print(k, '=', v)
     sleep(2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
