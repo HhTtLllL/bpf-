@@ -65,8 +65,10 @@ b.attach_kprobe(event="si_swapinfo", fn_name="cul_meminfo")
 totalram = 0
 freeram = 0
 shareram = 0
-while(1):
 
+sleep(3)
+while(1):
+    
     conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
     cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     for k, v in table_meminfo.items():

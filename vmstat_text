@@ -1,0 +1,68 @@
+const char * const vmstat_text[] = {
+	/* enum zone_stat_item counters */
+	"nr_free_pages",
+	"nr_zone_inactive_anon",
+	"nr_zone_active_anon",
+	"nr_zone_inactive_file",
+	"nr_zone_active_file",
+	"nr_zone_unevictable",
+	"nr_zone_write_pending",
+	"nr_mlock",
+	"nr_bounce",
+#if IS_ENABLED(CONFIG_ZSMALLOC)
+	"nr_zspages",
+#endif
+	"nr_free_cma",
+
+	/* enum numa_stat_item counters */
+#ifdef CONFIG_NUMA
+	"numa_hit",
+	"numa_miss",
+	"numa_foreign",
+	"numa_interleave",
+	"numa_local",
+	"numa_other",
+#endif
+
+	/* enum node_stat_item counters */
+	"nr_inactive_anon",
+	"nr_active_anon",
+	"nr_inactive_file",
+	"nr_active_file",
+	"nr_unevictable",
+	"nr_slab_reclaimable",
+	"nr_slab_unreclaimable",
+	"nr_isolated_anon",
+	"nr_isolated_file",
+	"workingset_nodes",
+	"workingset_refault_anon",
+	"workingset_refault_file",
+	"workingset_activate_anon",
+	"workingset_activate_file",
+	"workingset_restore_anon",
+	"workingset_restore_file",
+	"workingset_nodereclaim",
+	"nr_anon_pages",
+	"nr_mapped",
+	"nr_file_pages",
+	"nr_dirty",
+	"nr_writeback",
+	"nr_writeback_temp",
+	"nr_shmem",
+	"nr_shmem_hugepages",
+	"nr_shmem_pmdmapped",
+	"nr_file_hugepages",
+	"nr_file_pmdmapped",
+	"nr_anon_transparent_hugepages",
+	"nr_vmscan_write",
+	"nr_vmscan_immediate_reclaim",
+	"nr_dirtied",
+	"nr_written",
+	"nr_throttled_written",
+	"nr_kernel_misc_reclaimable",
+	"nr_foll_pin_acquired",
+	"nr_foll_pin_released",
+	"nr_kernel_stack",
+	
+	
+}

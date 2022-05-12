@@ -135,6 +135,7 @@ ob_slab = 0
 cache_order = 0
 
 #b.trace_print()
+sleep(3)
 while(1):
     
     conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')

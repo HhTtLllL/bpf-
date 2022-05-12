@@ -112,7 +112,7 @@ name = [
 	# enum vm_event_item counters 
 	"pgpgin",                           #从启动到现在读入的内存页数(从硬盘上读取到物理内存)
 	"pgpgout",                          #从启动到现在把数据从物理内存写到磁盘的数据量
-	"pswpin",                           #从启动到现在读入的就按分区页数
+	"pswpin",                           #从启动到现在读入的交换分区页数
 	"pswpout",
 	"pgalloc_dma",
 	"pgalloc_dma32",
@@ -269,6 +269,7 @@ d = {
 
 print("vmstat_text\t\t\t\tnumber")
 
+sleep(3)
 while(1):
 
     conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
@@ -292,20 +293,3 @@ while(1):
  #   for k, v in d.items():
  #       print(k, '=', v)
     sleep(2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

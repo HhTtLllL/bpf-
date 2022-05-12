@@ -36,10 +36,8 @@ struct contig_page_info {
 
 */
 
-int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct zone *zone) {
-
-
-    bpf_trace_printk("asdasdasd");
+//int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct zone *zone) {
+int cul_mem(struct pt_regs * ctx, struct zone *zone) {
 
     int result = -1000;
     int zero = 0;
@@ -151,7 +149,7 @@ int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct z
 
 """
 b = BPF(text = bpf_text)
-b.attach_kprobe(event = "extfrag_show_print", fn_name = "cul_mem")
+b.attach_kprobe(event = "next_zone", fn_name = "cul_mem")
 dma = b.get_table("dma")
 dma32 = b.get_table("dma32")
 normal = b.get_table("normal")
@@ -164,8 +162,9 @@ normal_list = [0.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 
 
-b.trace_print()
+#b.trace_print()
 t = 0
+
 while(1):
 
     sleep(3)
@@ -179,9 +178,10 @@ while(1):
         for k, v in dma.items():
             if (i == k.value) :
                 dma_list[i] = v.value / 1000 + (v.value%1000)/1000
-                if (dma_list[i] > 1): 
+                #print(v.value)
+                if (dma_list[i] >= 0): 
                     dma_list[i] = dma_list[i] - 1;
-                print("%d.%03d "%(v.value / 1000, v.value%1000), end = '\t')
+                print("%d.000 "%(dma_list[i]), end = '\t')
     print()
 
     sql = 'insert into frag_dma(dma_zero, dma_one, dma_two, dma_three, dma_four, dma_five, dma_six, dma_seven, dma_eight, dma_nine, dma_ten, time) values(%(dma_zero)s, %(dma_one)s, %(dma_two)s, %(dma_three)s, %(dma_four)s, %(dma_five)s, %(dma_six)s, %(dma_seven)s, %(dma_eight)s, %(dma_nine)s, %(dma_ten)s,  now())'

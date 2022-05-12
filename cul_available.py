@@ -31,6 +31,7 @@ b.attach_kretprobe(event = "si_mem_available", fn_name = "cul_available")
 table_available = b.get_table("table_available")
 
 avail = 0
+sleep(3)
 while(1):
     conn = pymysql.connect(host='127.0.0.1', user = 'root', password = 'll', database = 'memory')
     cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)

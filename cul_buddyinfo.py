@@ -77,6 +77,7 @@ normal_list = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 #b.trace_print()
 #num*2^x*PAGE_SIZE   /mm/vmstat.c 
+sleep(3)
 while(1):
     sleep(3)
 
