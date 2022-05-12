@@ -10,6 +10,7 @@ bpf_text = """
 #include <uapi/linux/ptrace.h>
 #include <linux/sched/mm.h>
 #include <linux/slub_def.h>
+#include <linux/slab.h>
 
 BPF_HASH(name, int, char*);
 BPF_HASH(size, int, unsigned int);
@@ -58,7 +59,8 @@ BPF_HASH(myslab_table, unsigned long, struct Myslab);
 
 struct kmem_cache *kmem_cache_node;
 
-int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s, struct slabinfo *sinfo) { 
+//int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s, struct slabinfo *sinfo) { 
+int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s) { 
     
     unsigned long nr_slabs = 0;
     unsigned long nr_objs = 0;
@@ -126,7 +128,8 @@ int cul_meminfo(struct pt_regs *ctx, struct kmem_cache *s, struct slabinfo *sinf
 
 b = BPF(text = bpf_text)
 
-b.attach_kprobe(event="get_slabinfo", fn_name="cul_meminfo")
+#b.attach_kprobe(event="get_slabinfo", fn_name="cul_meminfo")
+b.attach_kprobe(event="show_slab_objets", fn_name="cul_meminfo")
 myslab = b.get_table("myslab_table")
 
 name = ''

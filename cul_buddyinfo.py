@@ -19,9 +19,10 @@ BPF_HASH(dma32, int, unsigned long);
 BPF_HASH(normal, int, unsigned long);
 BPF_HASH(zone, int, char*);
 
-int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat, struct zone *zone) {
+//int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat, struct zone *zone) {
+int cul_mem(struct pt_regs *ctx, struct zone *zone) {
     
-    bpf_trace_printk("node %d, zone %s", pgdat->node_id, zone->name);
+   // bpf_trace_printk("node %d, zone %s", pgdat->node_id, zone->name);
     bpf_trace_printk("node %d",  pageblock_order);
 
     const char* p = zone->name;
@@ -65,7 +66,7 @@ int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat, struct zo
 """
 
 b = BPF(text = bpf_text)
-b.attach_kprobe(event = "frag_show_print", fn_name = "cul_mem")
+b.attach_kprobe(event = "next_zone", fn_name = "cul_mem")
 dma = b.get_table("dma")
 dma32 = b.get_table("dma32")
 normal = b.get_table("normal")

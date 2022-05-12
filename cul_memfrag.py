@@ -39,6 +39,8 @@ struct contig_page_info {
 //int cul_mem(struct pt_regs *ctx, struct seq_file *m, pg_data_t *pgdat,  struct zone *zone) {
 int cul_mem(struct pt_regs * ctx, struct zone *zone) {
 
+    
+    bpf_trace_printk("bbbbbbbbbbbbbbbbbbbbbb");
     int result = -1000;
     int zero = 0;
     const char *p = zone->name;
@@ -65,7 +67,7 @@ int cul_mem(struct pt_regs * ctx, struct zone *zone) {
             if (fill_order >= order)    free_blocks_suitable += blocks << (fill_order - order);
         }
         
-        bpf_trace_printk("order = %d, free_blocks_total = %lu, free_pages = %lu",order, free_blocks_total, free_pages);
+ //       bpf_trace_printk("order = %d, free_blocks_total = %lu, free_pages = %lu",order, free_blocks_total, free_pages);
 
         //__fragmentation_index
         //数值从0-1,保留两位小数，总共是3位有效数字。转换成0-1000；
@@ -112,12 +114,6 @@ int cul_mem(struct pt_regs * ctx, struct zone *zone) {
             }
 
             int res =  1000 - div_u64( (1000+(div_u64(free_pages * 1000ULL, requested))), free_blocks_total);
-            bpf_trace_printk("res_real = %d", res);
-            bpf_trace_printk("request = %lu", requested);
-
-            bpf_trace_printk("div_64_1 = %lu", (div_u64(free_pages * 1000ULL, requested)));
-            bpf_trace_printk("res = %lu", div_u64( (1000+(div_u64(free_pages * 1000ULL, requested))), free_blocks_total));
-            bpf_trace_printk("zone_free_page = %lu, free_blocks_total = %lu", free_pages, free_blocks_total);
             normal.update(&key, &res);
         } else {
 
